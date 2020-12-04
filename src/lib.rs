@@ -1,11 +1,15 @@
+use std::cmp::min;
 use std::error::Error;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::io::Write;
 use std::io::{stdin, stdout};
+use std::iter;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 pub use clap::Clap;
+pub use colored;
+use colored::*;
 
 const DISPLAY_WIDTH: usize = 40;
 const BASE_URL: &str = "https://adventofcode.com";
@@ -27,13 +31,18 @@ pub struct Opt {
     pub days: Vec<String>,
 }
 
-pub fn print_with_duration(line: &str, duration: Duration) {
-    println!(
-        "{:.<width$} {:.2?}",
-        format!("{} ", line),
-        duration,
-        width = DISPLAY_WIDTH
-    );
+pub fn print_with_duration(line: &str, output: Option<&str>, duration: Duration) {
+    let duration = format!("({:.2?})", duration);
+    print!("  - {} {}", line, duration.dimmed());
+
+    if let Some(output) = output {
+        let width = "  - ".len() + line.len() + 1 + duration.len();
+        let dots = DISPLAY_WIDTH - min(DISPLAY_WIDTH - 5, width) - 2;
+        let dots: String = iter::repeat('.').take(dots).collect();
+        println!(" {} {}", dots.dimmed(), output.bold());
+    } else {
+        println!()
+    }
 }
 
 fn input_path(year: u16, day: u8) -> String {
@@ -68,7 +77,7 @@ pub fn get_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
             .send()?;
         let elapsed = start.elapsed();
 
-        print_with_duration("  - downloaded input file", elapsed);
+        print_with_duration("downloaded input file", None, elapsed);
         resp.text()
     })?;
 
@@ -93,14 +102,6 @@ pub fn get_conn_token() -> Result<String, std::io::Error> {
         Ok(output.trim().to_string())
     })
 }
-
-// Intended usage:
-//
-// aoc::main! {
-//     year 2019;
-//     day1: generator => part1, part2;
-//     day2: generator => part1, part2
-// }
 
 #[macro_export]
 macro_rules! main {
@@ -150,7 +151,7 @@ macro_rules! main {
                     let start = Instant::now();
                     let input = $day::$generator(&data);
                     let elapsed = start.elapsed();
-                    $crate::print_with_duration("  - generator", elapsed);
+                    $crate::print_with_duration("generator", None, elapsed);
 
                     $({
                         let start = Instant::now();
@@ -158,7 +159,8 @@ macro_rules! main {
                         let elapsed = start.elapsed();
 
                         $crate::print_with_duration(
-                            &format!("  - {}: {}", stringify!($solution), response),
+                            stringify!($solution),
+                            Some(&format!("{}", response)),
                             elapsed,
                         );
                     })+

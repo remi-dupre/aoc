@@ -7,3 +7,4 @@ edition = "2018"
 [dependencies]
 attohttpc = { version = "0.16.0", default_features = false, features = ["tls"] }
 clap = "3.0.0-beta.2"
+colored = "2.0.0"
