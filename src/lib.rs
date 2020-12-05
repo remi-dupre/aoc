@@ -36,7 +36,7 @@ pub fn print_with_duration(line: &str, output: Option<&str>, duration: Duration)
     print!("  - {} {}", line, duration.dimmed());
 
     if let Some(output) = output {
-        let width = "  - ".len() + line.len() + 1 + duration.len();
+        let width = "  - ".len() + line.chars().count() + 1 + duration.chars().count();
         let dots = DISPLAY_WIDTH - min(DISPLAY_WIDTH - 5, width) - 2;
         let dots: String = iter::repeat('.').take(dots).collect();
         println!(" {} {}", dots.dimmed(), output.bold());
