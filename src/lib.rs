@@ -39,7 +39,17 @@ pub fn print_with_duration(line: &str, output: Option<&str>, duration: Duration)
         let width = "  - ".len() + line.chars().count() + 1 + duration.chars().count();
         let dots = DISPLAY_WIDTH - min(DISPLAY_WIDTH - 5, width) - 2;
         let dots: String = iter::repeat('.').take(dots).collect();
-        println!(" {} {}", dots.dimmed(), output.bold());
+        print!(" {}", dots.dimmed());
+
+        if output.contains('\n') {
+            println!();
+
+            for line in output.trim_matches('\n').lines() {
+                println!("    {}", line.bold());
+            }
+        } else {
+            println!(" {}", output.bold());
+        }
     } else {
         println!()
     }
