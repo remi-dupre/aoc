@@ -2,10 +2,10 @@ pub mod input;
 
 use std::cmp::min;
 use std::iter;
+use std::path::PathBuf;
 use std::time::Duration;
 
 pub use clap::Clap;
-pub use colored;
 use colored::*;
 
 const DISPLAY_WIDTH: usize = 40;
@@ -41,11 +41,15 @@ pub fn print_with_duration(line: &str, output: Option<&str>, duration: Duration)
 )]
 pub struct Opt {
     /// Read input from stdin instead of downloading it
-    #[clap(short, long)]
+    #[clap(short = 'i', long, conflicts_with = "file")]
     pub stdin: bool,
 
+    /// Read input from file instead of downloading it
+    #[clap(short, long, conflicts_with = "stdin")]
+    pub file: Option<PathBuf>,
+
     /// Days to execute. By default all implemented days will run.
-    #[clap(short, long)]
+    #[clap(name = "day num", short, long = "day")]
     pub days: Vec<String>,
 }
 
@@ -56,8 +60,9 @@ macro_rules! main {
         $( $day: ident $( : $generator: ident )? => $( $solution: ident ),+ );+
         $( ; )?
     ) => {
-        use std::time::Instant;
+        use std::fs::read_to_string;
         use std::io::Read;
+        use std::time::Instant;
 
         use $crate::Clap;
 
@@ -69,6 +74,27 @@ macro_rules! main {
 
             if opt.days.is_empty() {
                 opt.days = DAYS.iter().map(|s| s[3..].to_string()).collect();
+            } else {
+                let ignored_days: Vec<_> = opt.days
+                    .iter()
+                    .filter(|day| !DAYS.contains(&format!("day{}", day).as_str()))
+                    .map(String::as_str)
+                    .collect();
+
+                if !ignored_days.is_empty() {
+                    eprintln!(r"/!\ Ignoring unimplemented days: {}", ignored_days.join(", "));
+                }
+
+                opt.days = opt.days
+                    .into_iter()
+                    .filter(|day| DAYS.contains(&format!("day{}", day).as_str()))
+                    .collect();
+            }
+
+            if opt.days.len() > 1 && (opt.stdin || opt.file.is_some()) {
+                eprintln!(r"/!\ You are using a personalized output over several days which can");
+                eprintln!(r"    be missleading. If you only intend to run solutions for a");
+                eprintln!(r"    specific day, you can specify it by using the `-d DAY_NUM` flag.");
             }
 
             for (i, day) in opt.days.iter().enumerate() {
@@ -94,6 +120,9 @@ macro_rules! main {
                                 std::io::stdin().read_to_string(&mut data)
                                     .expect("failed to read from stdin");
                                 data
+                            } else if let Some(path) = opt.file.as_ref() {
+                                read_to_string(path)
+                                    .expect("failed to read specified file")
                             } else {
                                 $crate::input::get_input(YEAR, day).expect("could not fetch input")
                             }

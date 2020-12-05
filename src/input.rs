@@ -44,7 +44,7 @@ fn get_from_path_or_else<E: Error>(
         Ok(res.trim().to_string())
     } else {
         let res = fallback()?;
-        create_dir_all(PathBuf::from(path).parent().unwrap())
+        create_dir_all(PathBuf::from(path).parent().expect("no parent directory"))
             .and_then(|_| File::create(path))
             .and_then(|mut file| file.write_all(res.as_bytes()))
             .unwrap_or_else(|err| eprintln!("could not write {}: {}", path, err));
