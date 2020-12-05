@@ -117,7 +117,7 @@ pub fn get_conn_token() -> Result<String, std::io::Error> {
 macro_rules! main {
     (
         year $year: expr;
-        $( $day: ident : $generator: ident => $( $solution: ident ),+ );+
+        $( $day: ident $( : $generator: ident )? => $( $solution: ident ),+ );+
         $( ; )?
     ) => {
         use std::time::Instant;
@@ -158,10 +158,14 @@ macro_rules! main {
                         }
                     };
 
-                    let start = Instant::now();
-                    let input = $day::$generator(&data);
-                    let elapsed = start.elapsed();
-                    $crate::print_with_duration("generator", None, elapsed);
+                    let input = data.as_str();
+
+                    $(
+                        let start = Instant::now();
+                        let input = $day::$generator(&data);
+                        let elapsed = start.elapsed();
+                        $crate::print_with_duration("generator", None, elapsed);
+                    )?
 
                     $({
                         let start = Instant::now();
