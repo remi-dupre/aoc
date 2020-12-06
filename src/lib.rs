@@ -5,7 +5,11 @@ use std::iter;
 use std::path::PathBuf;
 use std::time::Duration;
 
-pub use clap::Clap;
+// Reexport some crates for the generated main
+pub use clap;
+pub use criterion;
+
+use clap::Clap;
 use colored::*;
 
 const DISPLAY_WIDTH: usize = 40;
@@ -51,6 +55,11 @@ pub struct Opt {
     /// Days to execute. By default all implemented days will run.
     #[clap(name = "day num", short, long = "day")]
     pub days: Vec<String>,
+
+    // TODO: better handling of bench CLI
+    /// Run criterion benchmarks
+    #[clap(short, long)]
+    pub bench: bool,
 }
 
 #[macro_export]
@@ -64,13 +73,17 @@ macro_rules! main {
         use std::io::Read;
         use std::time::Instant;
 
-        use $crate::Clap;
+        use $crate::clap::Clap;
 
         const YEAR: u16 = $year;
         const DAYS: &[&str] = &[$(stringify!($day)),*];
 
         fn main() {
             let mut opt = $crate::Opt::parse();
+
+            if opt.bench {
+                bench::run_benchs();
+            }
 
             if opt.days.is_empty() {
                 opt.days = DAYS.iter().map(|s| s[3..].to_string()).collect();
@@ -151,6 +164,41 @@ macro_rules! main {
                     }
                 )+
             }
+        }
+
+
+        mod bench {
+            use $crate::criterion::*;
+
+            pub fn run_benchs() {
+                main();
+            }
+
+            $(
+                fn $day(c: &mut Criterion) {
+                    let mut group = c.benchmark_group(stringify!($day));
+                    let day = stringify!($day)[3..].parse().expect("dayX expected for module");
+
+                    let data = $crate::input::get_input(crate::YEAR, day)
+                        .expect("could not fetch input");
+
+                    let input = data.as_str();
+                    $( let input = crate::$day::$generator(&data); )?
+
+
+                    $(
+                        group.bench_function(
+                            stringify!($solution),
+                            |b| b.iter(|| crate::$day::$solution(&input)),
+                        );
+                    )+
+
+                    group.finish();
+                }
+            )+
+
+            criterion_group!(benches, $($day),+);
+            criterion_main!(benches);
         }
     };
 }

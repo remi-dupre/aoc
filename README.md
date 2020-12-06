@@ -11,6 +11,7 @@ Currently this will only provide a few benefits:
 
   - a somewhat pretty orchestration of your solutions
   - automatic download and loading of your input files
+  - generation of criterion benchmarks
 
 
 Usage
