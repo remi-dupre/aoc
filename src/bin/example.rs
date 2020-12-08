@@ -27,7 +27,7 @@ mod day1 {
     }
 }
 
-aoc::main! {
+aoc_main::main! {
     year 2019;
     day1 : generator => part_1, part_2
 }
