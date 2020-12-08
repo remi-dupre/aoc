@@ -18,7 +18,7 @@ Usage
 -----
 
 The generator and solutions for a given day must be implemented in a module
-called `dayX`. Then you can simply invoke the `aoc::main!` macro in your
+called `dayX`. Then you can simply invoke the `aoc_main::main!` macro in your
 `main.rs`:
 
 ```rust
@@ -51,7 +51,7 @@ mod day1 {
 mod day2;
 mod day3;
 
-aoc::main! {
+aoc_main::main! {
     year 2019;
     day1 : generator => part_1, part_2;
     day2 : generator => part_1, part_2, part_2_optimized;

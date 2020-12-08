@@ -6,7 +6,7 @@ repository = "https://github.com/remi-dupre/aoc"
 license = "Apache-2.0"
 version = "0.1.0"
 readme = "README.md"
-keywords = ["advent of code", "aoc", "macro"]
+keywords = ["advent", "aoc", "macro"]
 edition = "2018"
 
 [dependencies]
