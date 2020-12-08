@@ -1,15 +1,14 @@
 pub mod input;
+pub mod options;
 
 use std::cmp::min;
 use std::iter;
-use std::path::PathBuf;
 use std::time::Duration;
 
 // Reexport some crates for the generated main
 pub use clap;
 pub use criterion;
 
-use clap::Clap;
 use colored::*;
 
 const DISPLAY_WIDTH: usize = 40;
@@ -38,30 +37,6 @@ pub fn print_with_duration(line: &str, output: Option<&str>, duration: Duration)
     }
 }
 
-#[derive(Debug, Clap)]
-#[clap(
-    name = "Advent of Code",
-    about = concat!("Main page of the event: https://adventofcode.com/")
-)]
-pub struct Opt {
-    /// Read input from stdin instead of downloading it
-    #[clap(short = 'i', long, conflicts_with = "file")]
-    pub stdin: bool,
-
-    /// Read input from file instead of downloading it
-    #[clap(short, long, conflicts_with = "stdin")]
-    pub file: Option<PathBuf>,
-
-    /// Days to execute. By default all implemented days will run.
-    #[clap(name = "day num", short, long = "day")]
-    pub days: Vec<String>,
-
-    // TODO: better handling of bench CLI
-    /// Run criterion benchmarks
-    #[clap(short, long)]
-    pub bench: bool,
-}
-
 #[macro_export]
 macro_rules! main {
     (
@@ -79,7 +54,7 @@ macro_rules! main {
         const DAYS: &[&str] = &[$(stringify!($day)),*];
 
         fn main() {
-            let mut opt = $crate::Opt::parse();
+            let mut opt = $crate::options::Opt::parse();
 
             if opt.bench {
                 bench::run_benchs();
@@ -171,7 +146,13 @@ macro_rules! main {
             use $crate::criterion::*;
 
             pub fn run_benchs() {
-                main();
+                // Estonishly `configure_from_args` provides a better default
+                // configuration than `Criterion::default`. It could be
+                // interesting to evaluate if accepting the same command line
+                // arguments as Criterion could work smoothly.
+                let mut criterion = Criterion::default().configure_from_args();
+                $( $day(&mut criterion); )+
+                // TODO: final report
             }
 
             $(
@@ -196,9 +177,6 @@ macro_rules! main {
                     group.finish();
                 }
             )+
-
-            criterion_group!(benches, $($day),+);
-            criterion_main!(benches);
         }
     };
 }
