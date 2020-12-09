@@ -1,5 +1,6 @@
 pub mod input;
 pub mod parse;
+pub mod run;
 
 use std::cmp::min;
 use std::iter;
@@ -64,62 +65,13 @@ pub struct Opt {
 }
 
 #[macro_export]
-macro_rules! run_day {
-    (
-        { $i: expr, $curr_day: expr, $year: expr, $opt: expr },
-        { day $day: ident { gen $generator: ident { $( { sol $solution: ident } )* } } }
-    ) => {{
-        if stringify!($day) == $curr_day {
-            if $i != 0 { println!() }
-            let day = $curr_day[3..].parse().expect("days must be integers");
-            println!("Day {}", day);
-
-            let data = {
-                if $opt.stdin {
-                    let mut data = String::new();
-                    std::io::stdin().read_to_string(&mut data)
-                        .expect("failed to read from stdin");
-                    data
-                } else if let Some(path) = $opt.file.as_ref() {
-                    read_to_string(path)
-                        .expect("failed to read specified file")
-                } else {
-                    $crate::input::get_input($year, day).expect("could not fetch input")
-                }
-            };
-
-            let input = data.as_str();
-
-            // $(
-                let start = Instant::now();
-                let input = $day::$generator(&data);
-                let elapsed = start.elapsed();
-                $crate::print_with_duration("generator", None, elapsed);
-            // )?
-
-            $({
-                let start = Instant::now();
-                let response = $day::$solution(&input);
-                let elapsed = start.elapsed();
-
-                $crate::print_with_duration(
-                    stringify!($solution),
-                    Some(&format!("{}", response)),
-                    elapsed,
-                );
-            })+
-        }
-    }}
-}
-
-#[macro_export]
 macro_rules! main {
     ( year $year: expr; $( $tail: tt )* ) => {
         use std::fs::read_to_string;
         use std::io::Read;
         use std::time::Instant;
 
-        use $crate::{clap::Clap, parse, run_day};
+        use $crate::{clap::Clap, extract_day, parse, run_day};
 
         const YEAR: u16 = $year;
 
