@@ -56,7 +56,7 @@ mod day3 {
 }
 
 mod day4 {
-    pub fn generator(_: &str) -> Result<i64, impl std::fmt::Display> {
+    pub fn generator(_: &str) -> Result<i64, impl std::fmt::Display + std::fmt::Debug> {
         "five".parse()
     }
 
