@@ -1,10 +1,10 @@
 [package]
 name = "aoc-main"
 description = "A macro which defines a handful main for the Advent of Code"
+version = "0.2.0"
 authors = ["Rémi Dupré <r.dupre@qwant.com>"]
 repository = "https://github.com/remi-dupre/aoc"
 license = "Apache-2.0"
-version = "0.1.0"
 readme = "README.md"
 keywords = ["advent", "aoc", "macro"]
 edition = "2018"

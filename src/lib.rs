@@ -1,6 +1,5 @@
 pub mod input;
 pub mod parse;
-pub mod run;
 pub mod utils;
 
 use std::path::PathBuf;
@@ -36,6 +35,12 @@ pub struct Opt {
     pub bench: bool,
 }
 
+impl Opt {
+    pub fn day_enabled(&self, day: &str) -> bool {
+        day.starts_with("day") && self.days.iter().any(|d| d == &day[3..])
+    }
+}
+
 #[macro_export]
 macro_rules! main {
     ( year $year: expr; $( $tail: tt )* ) => {
@@ -43,21 +48,27 @@ macro_rules! main {
         use std::io::Read;
         use std::time::Instant;
 
-        use $crate::{clap::Clap, extract_day, parse, run_day};
+        use $crate::clap::Clap;
+        use $crate::criterion::*;
+        use $crate::{bench_day, extract_day, parse, run_day};
 
         const YEAR: u16 = $year;
 
         fn main() {
             let mut opt = $crate::Opt::parse();
-            let days = parse! { extract_day {}; $( $tail )* };
 
-            // if opt.bench {
-            //     bench::run_benchs();
-            // }
+            if opt.bench {
+                bench();
+            }
 
             if opt.days.is_empty() {
-                opt.days = days.iter().map(|s| s[3..].to_string()).collect();
+                opt.days = parse!(extract_day {}; $( $tail )*)
+                    .iter()
+                    .map(|s| s[3..].to_string())
+                    .collect();
             } else {
+                let days = parse! { extract_day {}; $( $tail )* };
+
                 let ignored_days: Vec<_> = opt.days
                     .iter()
                     .filter(|day| !days.contains(&format!("day{}", day).as_str()))
@@ -81,56 +92,22 @@ macro_rules! main {
             }
 
             for (i, day) in opt.days.iter().enumerate() {
-                let module_name = format!("day{}", day);
-
-                if !days.contains(&module_name.as_str()) {
-                    eprintln!(
-                        "Module `{}` was not registered, available are: {}",
-                        module_name,
-                        days.join(", "),
-                    );
-                }
-
                 parse! {
-                    run_day { i, module_name, YEAR, opt };
+                    run_day { i, format!("day{}", day), YEAR, opt };
                     $( $tail )*
                 };
             }
         }
 
+        fn bench() {
+            let mut criterion = Criterion::default().configure_from_args();
 
-        // mod bench {
-        //     use $crate::criterion::*;
-        //
-        //     pub fn run_benchs() {
-        //         main();
-        //     }
-        //
-        //     $(
-        //         fn $day(c: &mut Criterion) {
-        //             let mut group = c.benchmark_group(stringify!($day));
-        //             let day = stringify!($day)[3..].parse().expect("dayX expected for module");
-        //
-        //             let data = $crate::input::get_input(crate::YEAR, day)
-        //                 .expect("could not fetch input");
-        //
-        //             let input = data.as_str();
-        //             $( let input = crate::$day::$generator(&data); )?
-        //
-        //
-        //             $(
-        //                 group.bench_function(
-        //                     stringify!($solution),
-        //                     |b| b.iter(|| crate::$day::$solution(&input)),
-        //                 );
-        //             )+
-        //
-        //             group.finish();
-        //         }
-        //     )+
-        //
-        //     criterion_group!(benches, $($day),+);
-        //     criterion_main!(benches);
-        // }
+            parse! {
+                bench_day { &mut criterion, YEAR };
+                $( $tail )*
+            };
+
+            criterion.final_summary();
+        }
     };
 }
