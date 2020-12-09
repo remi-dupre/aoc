@@ -5,6 +5,8 @@ use std::io::{stdin, stdout};
 use std::path::PathBuf;
 use std::time::Instant;
 
+use crate::print::Line;
+
 const BASE_URL: &str = "https://adventofcode.com";
 const INPUT_DIR: &str = "input";
 const CONN_TOKEN_FILE: &str = ".token";
@@ -19,7 +21,11 @@ pub fn get_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
             .send()?;
         let elapsed = start.elapsed();
 
-        crate::print_with_duration("downloaded input file", None, Some(elapsed));
+        println!(
+            "  - {}",
+            Line::new("downloaded input file").with_duration(elapsed)
+        );
+
         resp.text()
     })?;
 
