@@ -2,7 +2,15 @@
 // $ctx, { day DAY { { gen GENERATOR } { { sol SOLUTION } { sol SOLUTION } } } }
 #[macro_export]
 macro_rules! parse {
-    // Read day
+    // Read day: default generator
+    (
+        day $apply: ident, $ctx: tt, $val: expr;
+        $day: ident => $( $tail: tt )*
+    ) => {
+        $crate::parse!( sol $apply, $ctx, $val; { day $day { { gen_default } { } } }; $( $tail )* )
+    };
+
+    // Read day: regular generator
     (
         day $apply: ident, $ctx: tt, $val: expr;
         $day: ident : $generator: ident => $( $tail: tt )*
@@ -10,12 +18,12 @@ macro_rules! parse {
         $crate::parse!( sol $apply, $ctx, $val; { day $day { { gen $generator } { } } }; $( $tail )* )
     };
 
-    // Read day: default generator
+    // Read day: fallible generator
     (
         day $apply: ident, $ctx: tt, $val: expr;
-        $day: ident => $( $tail: tt )*
+        $day: ident : $generator: ident ? => $( $tail: tt )*
     ) => {
-        $crate::parse!( sol $apply, $ctx, $val; { day $day { { gen_default } { } } }; $( $tail )* )
+        $crate::parse!( sol $apply, $ctx, $val; { day $day { { gen_fallible $generator } { } } }; $( $tail )* )
     };
 
     // Empty rules

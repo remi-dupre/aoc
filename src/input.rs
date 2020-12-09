@@ -19,7 +19,7 @@ pub fn get_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
             .send()?;
         let elapsed = start.elapsed();
 
-        crate::print_with_duration("downloaded input file", None, elapsed);
+        crate::print_with_duration("downloaded input file", None, Some(elapsed));
         resp.text()
     })?;
 

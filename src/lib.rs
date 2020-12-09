@@ -1,6 +1,7 @@
 pub mod input;
 pub mod parse;
 pub mod run;
+pub mod try_unwrap;
 
 use std::cmp::min;
 use std::iter;
@@ -9,6 +10,7 @@ use std::time::Duration;
 
 // Reexport some crates for the generated main
 pub use clap;
+pub use colored;
 pub use criterion;
 
 use clap::Clap;
@@ -16,9 +18,12 @@ use colored::*;
 
 const DISPLAY_WIDTH: usize = 40;
 
-pub fn print_with_duration(line: &str, output: Option<&str>, duration: Duration) {
-    let duration = format!("({:.2?})", duration);
-    print!("  - {} {}", line, duration.dimmed());
+pub fn print_with_duration(line: &str, output: Option<ColoredString>, duration: Option<Duration>) {
+    let duration = duration
+        .map(|duration| format!(" ({:.2?})", duration))
+        .unwrap_or_else(String::new);
+
+    print!("  - {}{}", line, duration.dimmed());
 
     if let Some(output) = output {
         let width = "  - ".len() + line.chars().count() + 1 + duration.chars().count();
