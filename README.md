@@ -77,6 +77,9 @@ following procedure (quoted from [cargo-aoc][2]):
   - Google Chrome / Chromium: "Application" tab, Cookies, and copy the "Value"
     field of the session cookie.
 
+If you wish to change or forget your connection token, you will have to remove
+`aoc` in your config directory (eg. `$HOME/.config/aoc` for linux users).
+
 
 [1]: https://adventofcode.com
 [2]: https://github.com/gobanos/cargo-aoc
