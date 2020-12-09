@@ -1,12 +1,10 @@
 pub mod input;
 pub mod parse;
+pub mod print;
 pub mod run;
 pub mod try_unwrap;
 
-use std::cmp::min;
-use std::iter;
 use std::path::PathBuf;
-use std::time::Duration;
 
 // Reexport some crates for the generated main
 pub use clap;
@@ -14,36 +12,6 @@ pub use colored;
 pub use criterion;
 
 use clap::Clap;
-use colored::*;
-
-const DISPLAY_WIDTH: usize = 40;
-
-pub fn print_with_duration(line: &str, output: Option<ColoredString>, duration: Option<Duration>) {
-    let duration = duration
-        .map(|duration| format!(" ({:.2?})", duration))
-        .unwrap_or_else(String::new);
-
-    print!("  - {}{}", line, duration.dimmed());
-
-    if let Some(output) = output {
-        let width = "  - ".len() + line.chars().count() + 1 + duration.chars().count();
-        let dots = DISPLAY_WIDTH - min(DISPLAY_WIDTH - 5, width) - 2;
-        let dots: String = iter::repeat('.').take(dots).collect();
-        print!(" {}", dots.dimmed());
-
-        if output.contains('\n') {
-            println!();
-
-            for line in output.trim_matches('\n').lines() {
-                println!("    {}", line.bold());
-            }
-        } else {
-            println!(" {}", output.bold());
-        }
-    } else {
-        println!()
-    }
-}
 
 #[derive(Debug, Clap)]
 #[clap(
