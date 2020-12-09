@@ -2,7 +2,7 @@
 macro_rules! run_day {
     (
         { $i: expr, $curr_day: expr, $year: expr, $opt: expr },
-        { day $day: ident { $gen: tt { $( { sol $solution: ident } )* } } }
+        { day $day: ident { $gen: tt { $( $sol: tt )* } } }
     ) => {{
         use $crate::colored::*;
 
@@ -26,25 +26,9 @@ macro_rules! run_day {
             };
 
             if let Some(input) = $crate::run_gen!($day, &data, $gen) {
-                $({
-                    let start = Instant::now();
-                    let response = $day::$solution(&input);
-                    let elapsed = start.elapsed();
-
-                    $crate::print_with_duration(
-                        stringify!($solution),
-                        Some(format!("{}", response).normal()),
-                        Some(elapsed),
-                    );
-                })+
+                $( $crate::run_sol!($day, &input, $sol); )+
             } else {
-                $({
-                    $crate::print_with_duration(
-                        stringify!($solution),
-                        Some("skipped".dimmed()),
-                        None,
-                    );
-                })+
+                $( $crate::skip_sol!($sol); )+
             }
         }
     }}
@@ -85,5 +69,51 @@ macro_rules! run_gen {
                 None
             }
         }
+    }};
+}
+
+#[macro_export]
+macro_rules! run_sol {
+    // Run solution
+    ( $day: ident, $input: expr, { sol $solution: ident } ) => {{
+        let start = Instant::now();
+        let response = $day::$solution($input);
+        let elapsed = start.elapsed();
+
+        $crate::print_with_duration(
+            stringify!($solution),
+            Some(format!("{}", response).normal()),
+            Some(elapsed),
+        );
+    }};
+
+    // Run fallible solution
+    ( $day: ident, $input: expr, { sol_fallible $solution: ident } ) => {{
+        use $crate::colored::*;
+        use $crate::try_unwrap::TryUnwrap;
+
+        let start = Instant::now();
+        let response = $day::$solution($input);
+        let elapsed = start.elapsed();
+
+        match response.try_unwrap() {
+            Ok(response) => {
+                $crate::print_with_duration(
+                    stringify!($solution),
+                    Some(format!("{}", response).normal()),
+                    Some(elapsed),
+                );
+            }
+            Err(msg) => {
+                $crate::print_with_duration(stringify!($solution), Some(msg.red()), Some(elapsed));
+            }
+        }
+    }};
+}
+
+#[macro_export]
+macro_rules! skip_sol {
+    ({ $kind: tt $solution: ident }) => {{
+        $crate::print_with_duration(stringify!($solution), Some("skipped".dimmed()), None);
     }};
 }
