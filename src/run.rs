@@ -1,3 +1,5 @@
+//! Generate code to run solutions.
+
 #[macro_export]
 macro_rules! run_day {
     (
@@ -41,7 +43,7 @@ macro_rules! run_gen {
 
     // Run generator
     ( $day: ident, $data: expr, { gen $generator: ident } ) => {{
-        use $crate::print::Line;
+        use $crate::utils::Line;
 
         let start = Instant::now();
         let input = $day::$generator($data);
@@ -53,8 +55,7 @@ macro_rules! run_gen {
     // Run fallible generator
     ( $day: ident, $data: expr, { gen_fallible $generator: ident } ) => {{
         use $crate::colored::*;
-        use $crate::print::Line;
-        use $crate::try_unwrap::TryUnwrap;
+        use $crate::utils::{Line, TryUnwrap};
 
         let start = Instant::now();
         let result = $day::$generator($data);
@@ -83,7 +84,7 @@ macro_rules! run_sol {
     // Run solution
     ( $day: ident, $input: expr, { sol $solution: ident } ) => {{
         use $crate::colored::*;
-        use $crate::print::Line;
+        use $crate::utils::Line;
 
         let start = Instant::now();
         let response = $day::$solution($input);
@@ -100,8 +101,7 @@ macro_rules! run_sol {
     // Run fallible solution
     ( $day: ident, $input: expr, { sol_fallible $solution: ident } ) => {{
         use $crate::colored::*;
-        use $crate::print::Line;
-        use $crate::try_unwrap::TryUnwrap;
+        use $crate::utils::{Line, TryUnwrap};
 
         let start = Instant::now();
         let response = $day::$solution($input);
@@ -126,7 +126,7 @@ macro_rules! run_sol {
 macro_rules! skip_sol {
     ({ $kind: tt $solution: ident }) => {{
         use $crate::colored::*;
-        use $crate::print::Line;
+        use $crate::utils::Line;
 
         println!(
             "  - {}",

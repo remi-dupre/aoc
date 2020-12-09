@@ -1,3 +1,5 @@
+//! Macro used to parse input tokens.
+
 // Call `apply` macro on this generated form of token tree;
 // $ctx, { day DAY { { gen GENERATOR } { { sol SOLUTION } { sol SOLUTION } } } }
 #[macro_export]
