@@ -33,8 +33,30 @@ mod day2 {
     }
 }
 
+mod day3 {
+    pub fn generator(_: &str) -> Option<&str> {
+        None
+    }
+
+    pub fn part_1(input: &str) -> usize {
+        input.len()
+    }
+}
+
+mod day4 {
+    pub fn generator(_: &str) -> Result<i64, impl std::fmt::Display> {
+        "five".parse()
+    }
+
+    pub fn part_1(input: &i64) -> i64 {
+        *input
+    }
+}
+
 aoc::main! {
     year 2019;
-    day1 : generator => part_1, part_2;
-    day2             => part_1;
+    day1 : generator  => part_1, part_2;
+    day2              => part_1;
+    day3 : generator? => part_1;
+    day4 : generator? => part_1;
 }

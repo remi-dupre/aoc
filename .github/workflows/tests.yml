@@ -26,3 +26,6 @@ jobs:
 
       - name: Format
         run: cargo fmt -- --check
+
+      - name: Run example
+        run: echo "42" | cargo run --bin example -- -i
