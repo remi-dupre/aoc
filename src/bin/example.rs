@@ -27,7 +27,46 @@ mod day1 {
     }
 }
 
+macro_rules! debug_tt {
+    ( $( $tt:tt )* ) => {{
+        println!("{}", stringify!($($tt)*));
+    }}
+}
+
+macro_rules! run {
+    ({}, { day $day: ident { gen $generator: ident { $( { sol $solution: ident } )* } } }) => {{
+        let input = $day::$generator("42");
+
+        $({
+            println!("{}", $day::$solution(&input));
+        })*
+    }}
+}
+
+// fn main() {
+//     aoc_main::parse! {
+//         debug_tt {};
+//         day1 : generator => part_1, part_2;
+//         day2 : generator => part_1_array, part_1;
+//     };
+//
+//     aoc_main::parse! {
+//         run {};
+//         day1 : generator => part_1, part_2;
+//     };
+//
+//     let test = aoc_main::parse! {
+//         extract_day {};
+//         day1 : generator => part_1, part_2;
+//         day2 : generator => part_1_array, part_1;
+//     };
+//     dbg!(test);
+//
+// }
+
+use aoc::extract_day;
+
 aoc::main! {
     year 2019;
-    day1 : generator => part_1, part_2
+    day1 : generator => part_1, part_2;
 }
