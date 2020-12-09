@@ -1,3 +1,5 @@
+//! Tools used to fetch input contents from adventofcode.com.
+
 use std::error::Error;
 use std::fs::{create_dir_all, read_to_string, File};
 use std::io::Write;
@@ -5,7 +7,7 @@ use std::io::{stdin, stdout};
 use std::path::PathBuf;
 use std::time::Instant;
 
-use crate::print::Line;
+use crate::utils::Line;
 
 const BASE_URL: &str = "https://adventofcode.com";
 const INPUT_DIR: &str = "input";
