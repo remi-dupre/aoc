@@ -66,6 +66,18 @@ output. Also, the generator can output a structure that contains borrowed data
 from the original input file.
 
 
+Benchmarks
+----------
+
+You can run Criterion benchmarks by running `cargo run --release -- --bench`,
+but first you need to enable the `bench` feature in your *cargo.toml*:
+
+```toml
+[dependencies]
+aoc-main = { version = "*", features = ["bench"] }
+```
+
+
 Fetching your AOC token
 -----------------------
 

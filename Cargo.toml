@@ -9,9 +9,15 @@ readme = "README.md"
 keywords = ["advent", "aoc", "macro"]
 edition = "2018"
 
+[features]
+# Criterion is a quite heavy dependencies which will not be used in many cases.
+bench = ["criterion"]
+
 [dependencies]
 attohttpc = { version = "0.16.0", default_features = false, features = ["tls"] }
 clap = "3.0.0-beta.2"
 colored = "2.0.0"
-criterion = "0.3.3"
 dirs = "3.0.1"
+
+# Optional dependencies
+criterion = { version = "0.3.3", optional = true }
