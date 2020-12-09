@@ -29,6 +29,19 @@ macro_rules! parse {
     // Empty rules
     ( day $apply: ident, $ctx: tt, $val: expr; ) => {};
 
+    // Read fallible solution
+    (
+        sol $apply: ident, $ctx: tt, $val: expr;
+        { day $day: tt { $gen: tt { $( $acc: tt )* } } } ;
+        $sol: ident ? $( $tail: tt )*
+    ) => {
+        $crate::parse!(
+            post_sol $apply, $ctx, $val;
+            { day $day { $gen { $( $acc )* { sol_fallible $sol } } } };
+            $( $tail )*
+        )
+    };
+
     // Read solution
     (
         sol $apply: ident, $ctx: tt, $val: expr;
