@@ -12,12 +12,12 @@ macro_rules! run_day {
             println!("Day {}", day);
 
             let data = {
-                if $opt.stdin {
+                if $opt.is_present("stdin") {
                     let mut data = String::new();
                     std::io::stdin().read_to_string(&mut data)
                         .expect("failed to read from stdin");
                     data
-                } else if let Some(path) = $opt.file.as_ref() {
+                } else if let Some(path) = $opt.value_of("file") {
                     read_to_string(path)
                         .expect("failed to read specified file")
                 } else {
