@@ -3,7 +3,6 @@ pub mod parse;
 pub mod utils;
 
 // Reexport some crates for the generated main
-pub use chrono;
 pub use clap;
 pub use colored;
 
@@ -46,7 +45,13 @@ pub fn args(year: u16) -> App<'static> {
                 .long("bench")
                 .about("Run criterion benchmarks"),
         )
-        .arg(Arg::new("all").long("all").about("Run all days"))
+        .arg(
+            Arg::new("all")
+                .short('a')
+                .long("all")
+                .conflicts_with("days")
+                .about("Run all days"),
+        )
 }
 
 #[macro_export]
@@ -56,8 +61,6 @@ macro_rules! base_main {
         use std::io::Read;
         use std::time::Instant;
 
-        use $crate::chrono::{prelude::*, FixedOffset, TimeZone};
-
         use $crate::{bench_day, extract_day, parse, run_day};
 
         const YEAR: u16 = $year;
@@ -65,13 +68,9 @@ macro_rules! base_main {
         fn main() {
             let mut opt = $crate::args(YEAR).get_matches();
 
-
             if opt.is_present("bench") {
                 bench();
             } else {
-                let est = FixedOffset::west(5 * 3600).from_utc_datetime(&Utc::now().naive_utc());
-                let today = est.day().to_string();
-
                 let days: Vec<_> = {
                     if let Some(opt_days) = opt.values_of("days") {
                         let opt_days: Vec<_> = opt_days.collect();
@@ -92,13 +91,17 @@ macro_rules! base_main {
                             .filter(|day| days.contains(&format!("day{}", day).as_str()))
                             .collect()
                     } else {
-                        if !opt.is_present("all") && est.year() == YEAR as i32 && est.month() == 12 && est.day() <= 25 {
-                            vec![&today]
-                        } else {
+                        if opt.is_present("all") {
                             parse!(extract_day {}; $( $tail )*)
                                 .iter()
                                 .map(|s| &s[3..])
                                 .collect()
+                        } else {
+                            vec![parse!(extract_day {}; $( $tail )*)
+                                .iter()
+                                .map(|s| &s[3..])
+                                .last()
+                                .expect("No day implemenations found")]
                         }
                     }
                 };
