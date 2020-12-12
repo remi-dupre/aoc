@@ -90,19 +90,18 @@ macro_rules! base_main {
                             .into_iter()
                             .filter(|day| days.contains(&format!("day{}", day).as_str()))
                             .collect()
+                    } else if opt.is_present("all") {
+                        parse!(extract_day {}; $( $tail )*)
+                            .iter()
+                            .map(|s| &s[3..])
+                            .collect()
                     } else {
-                        if opt.is_present("all") {
-                            parse!(extract_day {}; $( $tail )*)
-                                .iter()
-                                .map(|s| &s[3..])
-                                .collect()
-                        } else {
-                            vec![parse!(extract_day {}; $( $tail )*)
-                                .iter()
-                                .map(|s| &s[3..])
-                                .last()
-                                .expect("No day implemenations found")]
-                        }
+                        // Get most recent day, assuming the days are sorted
+                        vec![parse!(extract_day {}; $( $tail )*)
+                            .iter()
+                            .map(|s| &s[3..])
+                            .last()
+                            .expect("No day implemenations found")]
                     }
                 };
 
