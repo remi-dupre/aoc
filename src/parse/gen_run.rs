@@ -130,7 +130,7 @@ macro_rules! skip_sol {
 
         println!(
             "  - {}",
-            Line::new(stringify!($solution)).with_state("skipped".dimmed())
+            Line::new(stringify!($solution)).with_state("skipped".bright_black())
         );
     }};
 }
