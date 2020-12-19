@@ -79,13 +79,13 @@ impl fmt::Display for Line {
             .map(|duration| format!(" ({:.2?})", duration))
             .unwrap_or_else(String::new);
 
-        write!(f, "{}{}", self.text, duration.dimmed())?;
+        write!(f, "{}{}", self.text, duration.bright_black())?;
 
         if let Some(state) = &self.state {
             let width = self.text.chars().count() + 1 + duration.chars().count();
             let dots = display_width - min(display_width - 5, width) - 2;
             let dots: String = iter::repeat('.').take(dots).collect();
-            write!(f, " {}", dots.dimmed())?;
+            write!(f, " {}", dots.bright_black())?;
 
             if state.contains('\n') {
                 for line in state.trim_matches('\n').lines() {
