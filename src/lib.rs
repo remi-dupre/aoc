@@ -14,7 +14,7 @@ use clap::{App, Arg, ValueHint};
 pub fn args(year: u16) -> App<'static> {
     App::new(format!("Advent of Code {}", year))
         .author("Rémi D. <remi@dupre.io>")
-        .override_help("Main page of the event: https://adventofcode.com/")
+        .about("Main page of the event: https://adventofcode.com/")
         .arg(
             Arg::new("stdin")
                 .short('i')
