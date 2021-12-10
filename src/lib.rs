@@ -68,43 +68,43 @@ macro_rules! base_main {
         fn main() {
             let mut opt = $crate::args(YEAR).get_matches();
 
-            if opt.is_present("bench") {
-                bench();
-            } else {
-                let days: Vec<_> = {
-                    if let Some(opt_days) = opt.values_of("days") {
-                        let opt_days: Vec<_> = opt_days.collect();
-                        let days = parse! { extract_day {}; $( $tail )* };
+            let days: Vec<_> = {
+                if let Some(opt_days) = opt.values_of("days") {
+                    let opt_days: Vec<_> = opt_days.collect();
+                    let days = parse! { extract_day {}; $( $tail )* };
 
-                        let ignored_days: Vec<_> = opt_days
-                            .iter()
-                            .filter(|day| !days.contains(&format!("day{}", day).as_str()))
-                            .copied()
-                            .collect();
+                    let ignored_days: Vec<_> = opt_days
+                        .iter()
+                        .filter(|day| !days.contains(&format!("day{}", day).as_str()))
+                        .copied()
+                        .collect();
 
-                        if !ignored_days.is_empty() {
-                            eprintln!(r"/!\ Ignoring unimplemented days: {}", ignored_days.join(", "));
-                        }
-
-                        opt_days
-                            .into_iter()
-                            .filter(|day| days.contains(&format!("day{}", day).as_str()))
-                            .collect()
-                    } else if opt.is_present("all") {
-                        parse!(extract_day {}; $( $tail )*)
-                            .iter()
-                            .map(|s| &s[3..])
-                            .collect()
-                    } else {
-                        // Get most recent day, assuming the days are sorted
-                        vec![parse!(extract_day {}; $( $tail )*)
-                            .iter()
-                            .map(|s| &s[3..])
-                            .last()
-                            .expect("No day implemenations found")]
+                    if !ignored_days.is_empty() {
+                        eprintln!(r"/!\ Ignoring unimplemented days: {}", ignored_days.join(", "));
                     }
-                };
 
+                    opt_days
+                        .into_iter()
+                        .filter(|day| days.contains(&format!("day{}", day).as_str()))
+                        .collect()
+                } else if opt.is_present("all") {
+                    parse!(extract_day {}; $( $tail )*)
+                        .iter()
+                        .map(|s| &s[3..])
+                        .collect()
+                } else {
+                    // Get most recent day, assuming the days are sorted
+                    vec![parse!(extract_day {}; $( $tail )*)
+                        .iter()
+                        .map(|s| &s[3..])
+                        .last()
+                        .expect("No day implemenations found")]
+                }
+            };
+
+            if opt.is_present("bench") {
+                bench(days);
+            } else {
                 if days.len() > 1 && (opt.is_present("stdin") || opt.is_present("file")) {
                     eprintln!(r"/!\ You are using a personalized output over several days which can");
                     eprintln!(r"    be missleading. If you only intend to run solutions for a");
@@ -130,13 +130,15 @@ macro_rules! main {
 
         use $crate::criterion::Criterion;
 
-        fn bench() {
-            let mut criterion = Criterion::default().configure_from_args();
+        fn bench(days: Vec<&str>) {
+            let mut criterion = Criterion::default().with_output_color(true);
 
-            parse! {
-                bench_day { &mut criterion, YEAR };
-                $( $tail )*
-            };
+            for day in days.into_iter() {
+                parse! {
+                    bench_day { &mut criterion, format!("day{}", day), YEAR };
+                    $( $tail )*
+                };
+            }
 
             criterion.final_summary();
         }
@@ -149,7 +151,7 @@ macro_rules! main {
     ( year $year: expr; $( $tail: tt )* ) => {
         $crate::base_main! { year $year; $( $tail )* }
 
-        fn bench() {
+        fn bench(days: Vec<&str>) {
             println!("Benchmarks not available, please enable `bench` feature for cargo-main.");
         }
     }
