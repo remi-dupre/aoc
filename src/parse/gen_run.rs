@@ -36,7 +36,7 @@ macro_rules! run_day {
 
 #[macro_export]
 macro_rules! run_gen {
-    // No generator is needed: default begavior is to just pass input &str
+    // No generator is needed: default behavior is to just pass input &str
     ( $day: ident, $data: expr, { gen_default } ) => {{
         Some($data)
     }};

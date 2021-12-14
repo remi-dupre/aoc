@@ -20,7 +20,7 @@ pub fn args(year: u16) -> App<'static> {
                 .short('i')
                 .long("stdin")
                 .conflicts_with("file")
-                .about("Read input from stdin instead of downloading it"),
+                .help("Read input from stdin instead of downloading it"),
         )
         .arg(
             Arg::new("file")
@@ -29,7 +29,7 @@ pub fn args(year: u16) -> App<'static> {
                 .long("file")
                 .conflicts_with("stdin")
                 .value_hint(ValueHint::FilePath)
-                .about("Read input from file instead of downloading it"),
+                .help("Read input from file instead of downloading it"),
         )
         .arg(
             Arg::new("days")
@@ -37,20 +37,20 @@ pub fn args(year: u16) -> App<'static> {
                 .short('d')
                 .long("day")
                 .value_name("day num")
-                .about("Days to execute. By default all implemented days will run"),
+                .help("Days to execute. By default all implemented days will run"),
         )
         .arg(
             Arg::new("bench")
                 .short('b')
                 .long("bench")
-                .about("Run criterion benchmarks"),
+                .help("Run criterion benchmarks"),
         )
         .arg(
             Arg::new("all")
                 .short('a')
                 .long("all")
                 .conflicts_with("days")
-                .about("Run all days"),
+                .help("Run all days"),
         )
 }
 
