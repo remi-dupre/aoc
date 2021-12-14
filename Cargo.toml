@@ -20,4 +20,4 @@ colored = "2.0.0"
 dirs = "3.0.1"
 
 # Optional dependencies
-criterion = { version = "0.3.3", optional = true }
+criterion = { version = "0.3.4", optional = true }

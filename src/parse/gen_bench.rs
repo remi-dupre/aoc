@@ -3,16 +3,18 @@
 #[macro_export]
 macro_rules! bench_day {
     (
-        { $criterion: expr, $year: expr },
+        { $criterion: expr, $curr_day: expr, $year: expr },
         { day $day: ident { $gen: tt { $( $sol: tt )* } } }
     ) => {{
-        let day = stringify!($day)[3..].parse().expect("days must be integers");
-        let data = $crate::input::get_input($year, day).expect("could not fetch input");
-        let input = $crate::bench_gen!($day, &data, $gen);
+        if stringify!($day) == $curr_day {
+            let day = $curr_day[3..].parse().expect("days must be integers");
+            let data = $crate::input::get_input($year, day).expect("could not fetch input");
+            let input = $crate::bench_gen!($day, &data, $gen);
 
-        let mut group = $criterion.benchmark_group(stringify!($day));
-        $( $crate::bench_sol!(&mut group, $day, &input, $sol); )+
-        group.finish();
+            let mut group = $criterion.benchmark_group(stringify!($day));
+            $( $crate::bench_sol!(&mut group, $day, &input, $sol); )+
+            group.finish();
+        }
     }}
 }
 
