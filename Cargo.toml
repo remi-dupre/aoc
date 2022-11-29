@@ -7,7 +7,7 @@ repository = "https://github.com/remi-dupre/aoc"
 license = "Apache-2.0"
 readme = "README.md"
 keywords = ["advent", "aoc", "macro"]
-edition = "2018"
+edition = "2021"
 
 [features]
 # Criterion is a quite heavy dependencies which will not be used in many cases.
