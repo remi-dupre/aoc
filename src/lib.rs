@@ -89,7 +89,7 @@ macro_rules! base_main {
                         .into_iter()
                         .filter(|day| days.contains(&format!("day{}", day).as_str()))
                         .collect()
-                } else if opt.contains_id("all") {
+                } else if opt.get_flag("all") {
                     parse!(extract_day {}; $( $tail )*)
                         .iter()
                         .map(|s| &s[3..])
@@ -104,7 +104,7 @@ macro_rules! base_main {
                 }
             };
 
-            if opt.contains_id("bench") {
+            if opt.get_flag("bench") {
                 bench(days);
             } else {
                 if days.len() > 1 && (opt.contains_id("stdin") || opt.contains_id("file")) {
