@@ -9,22 +9,23 @@ pub use colored;
 #[cfg(feature = "bench")]
 pub use criterion;
 
-use clap::{Arg, Command, ValueHint};
+use clap::{Arg, ArgAction, Command, ValueHint};
 
-pub fn args(year: u16) -> Command<'static> {
-    Command::new(format!("Advent of Code {}", year))
-        .author("Rémi D. <remi@dupre.io>")
-        .about("Main page of the event: https://adventofcode.com/")
+pub fn args(year: u16) -> Command {
+    Command::new(format!("Advent of Code {year}"))
+        .about(format!(
+            "Main page of the event: https://adventofcode.com/{year}/"
+        ))
         .arg(
             Arg::new("stdin")
                 .short('i')
                 .long("stdin")
+                .action(ArgAction::SetTrue)
                 .conflicts_with("file")
                 .help("Read input from stdin instead of downloading it"),
         )
         .arg(
             Arg::new("file")
-                .takes_value(true)
                 .short('f')
                 .long("file")
                 .conflicts_with("stdin")
@@ -33,7 +34,6 @@ pub fn args(year: u16) -> Command<'static> {
         )
         .arg(
             Arg::new("days")
-                .takes_value(true)
                 .short('d')
                 .long("day")
                 .value_name("day num")
@@ -43,12 +43,14 @@ pub fn args(year: u16) -> Command<'static> {
             Arg::new("bench")
                 .short('b')
                 .long("bench")
+                .action(ArgAction::SetTrue)
                 .help("Run criterion benchmarks"),
         )
         .arg(
             Arg::new("all")
                 .short('a')
                 .long("all")
+                .action(ArgAction::SetTrue)
                 .conflicts_with("days")
                 .help("Run all days"),
         )
@@ -87,7 +89,7 @@ macro_rules! base_main {
                         .into_iter()
                         .filter(|day| days.contains(&format!("day{}", day).as_str()))
                         .collect()
-                } else if opt.contains_id("all") {
+                } else if opt.get_flag("all") {
                     parse!(extract_day {}; $( $tail )*)
                         .iter()
                         .map(|s| &s[3..])
@@ -102,7 +104,7 @@ macro_rules! base_main {
                 }
             };
 
-            if opt.contains_id("bench") {
+            if opt.get_flag("bench") {
                 bench(days);
             } else {
                 if days.len() > 1 && (opt.contains_id("stdin") || opt.contains_id("file")) {

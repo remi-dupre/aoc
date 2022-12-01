@@ -15,7 +15,7 @@ bench = ["criterion"]
 
 [dependencies]
 attohttpc = { version = "0.24", default_features = false, features = ["tls"] }
-clap = { version = "3.0.0-rc.3", default_features = false, features = ["std"] }
+clap = { version = "4", features = ["string"] }
 colored = "2"
 dirs = "4"
 
