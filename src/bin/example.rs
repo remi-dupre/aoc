@@ -65,7 +65,7 @@ mod day4 {
     }
 }
 
-aoc_main::main! {
+aoc::main! {
     year 2019;
     day1 : generator  => part_1, part_2;
     day2              => part_1_option?, part_1_result?, part_2_option?, part_2_result?;
