@@ -4,7 +4,6 @@ use colored::*;
 
 use std::cmp::min;
 use std::fmt;
-use std::iter;
 use std::time::Duration;
 
 // ---
@@ -84,7 +83,7 @@ impl fmt::Display for Line {
         if let Some(state) = &self.state {
             let width = self.text.chars().count() + 1 + duration.chars().count();
             let dots = display_width - min(display_width - 5, width) - 2;
-            let dots: String = iter::repeat('.').take(dots).collect();
+            let dots = ".".repeat(dots);
             write!(f, " {}", dots.bright_black())?;
 
             if state.contains('\n') {
