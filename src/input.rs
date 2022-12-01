@@ -7,9 +7,12 @@ use std::io::{stdin, stdout};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
+use attohttpc::header::{COOKIE, USER_AGENT};
+
 use crate::utils::Line;
 
 const BASE_URL: &str = "https://adventofcode.com";
+const USER_AGENT_VALUE: &str = "github.com/remi-dupre/aoc by remi@dupre.io";
 
 fn input_path(year: u16, day: u8) -> PathBuf {
     format!("input/{}/day{}.txt", year, day).into()
@@ -29,9 +32,12 @@ pub fn get_input(year: u16, day: u8) -> Result<String, Box<dyn Error>> {
         let start = Instant::now();
         let url = format!("{}/{}/day/{}/input", BASE_URL, year, day);
         let session_cookie = format!("session={}", get_conn_token()?);
+
         let resp = attohttpc::get(&url)
-            .header(attohttpc::header::COOKIE, session_cookie)
+            .header(COOKIE, session_cookie)
+            .header(USER_AGENT, USER_AGENT_VALUE)
             .send()?;
+
         let elapsed = start.elapsed();
 
         println!(
