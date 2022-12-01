@@ -9,10 +9,10 @@ pub use colored;
 #[cfg(feature = "bench")]
 pub use criterion;
 
-use clap::{App, Arg, ValueHint};
+use clap::{Arg, Command, ValueHint};
 
-pub fn args(year: u16) -> App<'static> {
-    App::new(format!("Advent of Code {}", year))
+pub fn args(year: u16) -> Command<'static> {
+    Command::new(format!("Advent of Code {}", year))
         .author("Rémi D. <remi@dupre.io>")
         .about("Main page of the event: https://adventofcode.com/")
         .arg(
@@ -69,13 +69,13 @@ macro_rules! base_main {
             let mut opt = $crate::args(YEAR).get_matches();
 
             let days: Vec<_> = {
-                if let Some(opt_days) = opt.values_of("days") {
-                    let opt_days: Vec<_> = opt_days.collect();
+                if let Some(opt_days) = opt.get_many::<String>("days") {
+                    let opt_days: Vec<&str> = opt_days.map(|s| s.as_str()).collect();
                     let days = parse! { extract_day {}; $( $tail )* };
 
                     let ignored_days: Vec<_> = opt_days
                         .iter()
-                        .filter(|day| !days.contains(&format!("day{}", day).as_str()))
+                        .filter(|day| !days.contains(&format!("day{day}").as_str()))
                         .copied()
                         .collect();
 
@@ -87,7 +87,7 @@ macro_rules! base_main {
                         .into_iter()
                         .filter(|day| days.contains(&format!("day{}", day).as_str()))
                         .collect()
-                } else if opt.is_present("all") {
+                } else if opt.contains_id("all") {
                     parse!(extract_day {}; $( $tail )*)
                         .iter()
                         .map(|s| &s[3..])
@@ -102,10 +102,10 @@ macro_rules! base_main {
                 }
             };
 
-            if opt.is_present("bench") {
+            if opt.contains_id("bench") {
                 bench(days);
             } else {
-                if days.len() > 1 && (opt.is_present("stdin") || opt.is_present("file")) {
+                if days.len() > 1 && (opt.contains_id("stdin") || opt.contains_id("file")) {
                     eprintln!(r"/!\ You are using a personalized output over several days which can");
                     eprintln!(r"    be missleading. If you only intend to run solutions for a");
                     eprintln!(r"    specific day, you can specify it by using the `-d DAY_NUM` flag.");
