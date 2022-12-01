@@ -1,5 +1,5 @@
 [package]
-name = "aoc"
+name = "aoc-main"
 description = "A macro which defines a handful main for the Advent of Code"
 version = "0.4.0"
 authors = ["Rémi Dupré <r.dupre@qwant.com>"]
