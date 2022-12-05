@@ -107,7 +107,7 @@ macro_rules! base_main {
             if opt.get_flag("bench") {
                 bench(days);
             } else {
-                if days.len() > 1 && (opt.contains_id("stdin") || opt.contains_id("file")) {
+                if days.len() > 1 && (opt.get_flag("stdin") || opt.contains_id("file")) {
                     eprintln!(r"/!\ You are using a personalized output over several days which can");
                     eprintln!(r"    be missleading. If you only intend to run solutions for a");
                     eprintln!(r"    specific day, you can specify it by using the `-d DAY_NUM` flag.");
@@ -115,7 +115,7 @@ macro_rules! base_main {
 
                 for (i, day) in days.iter().enumerate() {
                     parse! {
-                        run_day { i, format!("day{}", day), YEAR, opt };
+                        run_day { i, format!("day{day}"), YEAR, opt };
                         $( $tail )*
                     };
                 }
