@@ -74,7 +74,7 @@ fn get_from_path_or_else<E: Error>(
     let from_path = read_to_string(path);
 
     if let Ok(res) = from_path {
-        Ok(res.trim().to_string())
+        Ok(res)
     } else {
         let res = fallback()?;
         create_dir_all(path.parent().expect("no parent directory"))
