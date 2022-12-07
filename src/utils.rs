@@ -39,10 +39,11 @@ impl<T, E: fmt::Display> TryUnwrap for Result<T, E> {
 // --- Line: helper struct for printing
 // ---
 
-const DEFAULT_WIDTH: usize = 30;
+const PREFIX: &str = "  ";
+const DEFAULT_WIDTH: usize = 40;
 
 /// Simple helper struct used to display lines with a dotted separator.
-/// For example: "line text (1.2 ms) .............. status".
+/// For example: "  - line text (1.2 ms) .............. status".
 pub struct Line {
     text: String,
     duration: Option<Duration>,
@@ -67,6 +68,10 @@ impl Line {
         self.state = Some(state.into());
         self
     }
+
+    pub fn println(&self) {
+        println!("{self}");
+    }
 }
 
 impl fmt::Display for Line {
@@ -78,7 +83,7 @@ impl fmt::Display for Line {
             .map(|duration| format!(" ({:.2?})", duration))
             .unwrap_or_else(String::new);
 
-        write!(f, "{}{}", self.text, duration.bright_black())?;
+        write!(f, "{PREFIX}{}{}", self.text, duration.bright_black())?;
 
         if let Some(state) = &self.state {
             let width = self.text.chars().count() + 1 + duration.chars().count();

@@ -46,7 +46,7 @@ mod day2 {
 }
 
 mod day3 {
-    pub fn generator(_: &str) -> Option<&str> {
+    pub fn generator(_: String) -> Option<String> {
         None
     }
 
@@ -56,7 +56,7 @@ mod day3 {
 }
 
 mod day4 {
-    pub fn generator(_: &str) -> Result<i64, impl std::fmt::Display + std::fmt::Debug> {
+    pub fn generator(_: String) -> Result<i64, impl std::fmt::Display> {
         "five".parse()
     }
 
