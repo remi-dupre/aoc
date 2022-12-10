@@ -10,7 +10,7 @@ checksum = "4b46cbb362ab8752921c97e041f5e366ee6297bd428a31275b9fcf1e380f7299"
 
 [[package]]
 name = "aoc-main"
-version = "0.4.1"
+version = "0.5.0"
 dependencies = [
  "attohttpc",
  "clap 4.0.29",
