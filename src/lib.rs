@@ -7,20 +7,12 @@ use std::borrow::Borrow;
 use std::fmt::Display;
 use std::time::Instant;
 
-// Reexport some crates for the generated main
-pub use clap;
-pub use colored;
-
 use colored::Colorize;
 
-#[cfg(feature = "bench")]
-pub use criterion;
-
 use crate::input::get_input_data;
+use crate::params::{get_params, DayChoice, InputChoice, Params};
+use crate::step::Step;
 use crate::utils::Line;
-
-use self::params::{get_params, DayChoice, InputChoice, Params};
-use self::step::Step;
 
 pub type Error = Box<dyn std::error::Error>;
 
@@ -72,6 +64,9 @@ impl<I> DaySolutions<I> {
 pub trait DayTrait {
     fn day(&self) -> Day;
     fn run(&self, params: &Params);
+
+    #[cfg(feature = "bench")]
+    fn bench(&self, params: &Params, criterion: &mut criterion::Criterion);
 }
 
 impl<I> DayTrait for DaySolutions<I> {
@@ -111,6 +106,36 @@ impl<I> DayTrait for DaySolutions<I> {
             }
         }
     }
+
+    #[cfg(feature = "bench")]
+    fn bench(&self, params: &Params, criterion: &mut criterion::Criterion) {
+        let mut group = criterion.benchmark_group(format!("day {}", self.day));
+        let data = get_input_data(self.day, self.year, &params.input);
+
+        let input = {
+            let res = self.generator.run(data);
+
+            match res {
+                Ok(x) => x,
+                Err(err) => {
+                    eprintln!(
+                        r"/!\ Skipping day {} because generator failed: {err}",
+                        self.day,
+                    );
+
+                    return;
+                }
+            }
+        };
+
+        for solution in &self.solutions {
+            group.bench_with_input(solution.ident, &input, |b, input| {
+                b.iter(move || solution.implem.run(input))
+            });
+        }
+
+        group.finish();
+    }
 }
 
 pub fn parse_day_ident(ident: &str) -> Result<Day, String> {
@@ -141,8 +166,29 @@ pub fn run_main(year: Year, days: &[Box<dyn DayTrait>]) {
             .collect(),
     };
 
-    for day in days {
-        day.run(&params);
+    if params.bench {
+        #[cfg(feature = "bench")]
+        {
+            let mut criterion = criterion::Criterion::default()
+                .with_output_color(true)
+                .warm_up_time(std::time::Duration::from_millis(200))
+                .measurement_time(std::time::Duration::from_millis(1000));
+
+            for day in days {
+                day.bench(&params, &mut criterion);
+            }
+
+            criterion.final_summary();
+        }
+        #[cfg(not(feature = "bench"))]
+        {
+            eprintln!(r"/!\ You are using option --bench but the 'bench' feature is disabled,");
+            eprintln!(r"     please update dependancy to aoc-main in your Cargo.toml.");
+        }
+    } else {
+        for day in days {
+            day.run(&params);
+        }
     }
 }
 

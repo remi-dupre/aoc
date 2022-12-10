@@ -63,10 +63,9 @@ fn get_input(year: u16, day: u8) -> Result<String, Error> {
         let elapsed = start.elapsed();
         let mut result = resp.text()?;
 
-        println!(
-            "  - {}",
-            Line::new("downloaded input file").with_duration(elapsed)
-        );
+        Line::new("downloaded input file")
+            .with_duration(elapsed)
+            .println();
 
         if result.ends_with('\n') {
             result.pop();
@@ -97,12 +96,12 @@ pub fn get_expected(year: u16, day: u8, part: u8) -> Result<Option<String>, Erro
         let line = Line::new("get expected").with_duration(elapsed);
 
         let Some(found) = pattern.captures_iter(&body).nth(part.into()) else {
-            println!("  - {line}");
+            line.println();
             return Ok(None);
         };
 
         let expected = found.get(1).expect("no capture in pattern").as_str();
-        println!("  - {}", line.with_state(expected));
+        line.with_state(expected).println();
         Ok(Some(expected.to_string()))
     };
 

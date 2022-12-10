@@ -18,6 +18,7 @@ attohttpc = { version = "0.24", default_features = false, features = ["tls"] }
 clap = { version = "4", features = ["string"] }
 colored = "2"
 dirs = "4"
+regex = "1"
 
 # Optional dependencies
 criterion = { version = "0.4", optional = true }
