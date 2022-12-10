@@ -29,7 +29,7 @@ macro_rules! run_day {
                 $( $crate::run_sol!($day, &input, $sol); )+
             } else {
                 $( $crate::skip_sol!($sol); )+
-            }
+            };
         }
     }}
 }
