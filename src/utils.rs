@@ -6,6 +6,10 @@ use std::cmp::min;
 use std::fmt;
 use std::time::Duration;
 
+pub fn leak<T>(x: T) -> &'static mut T {
+    Box::leak(Box::new(x))
+}
+
 // ---
 // --- TryUnwrap: wrapper for Option and Result
 // ---

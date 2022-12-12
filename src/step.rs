@@ -30,29 +30,29 @@ where
 }
 
 /// Represent a feasible generator input
-pub trait GeneratorInput<'a> {
-    fn take_buffer(buffer: &'a mut String) -> Self;
+pub trait GeneratorInput {
+    fn take_buffer(buffer: &'static mut String) -> Self;
 }
 
-impl<'a> GeneratorInput<'a> for &'a str {
-    fn take_buffer(buffer: &'a mut String) -> Self {
+impl GeneratorInput for &'static str {
+    fn take_buffer(buffer: &'static mut String) -> Self {
         buffer
     }
 }
 
-impl<'a> GeneratorInput<'a> for &'a [u8] {
-    fn take_buffer(buffer: &'a mut String) -> Self {
+impl GeneratorInput for &'static [u8] {
+    fn take_buffer(buffer: &'static mut String) -> Self {
         buffer.as_bytes()
     }
 }
 
-impl GeneratorInput<'_> for String {
+impl GeneratorInput for String {
     fn take_buffer(buffer: &mut String) -> Self {
         std::mem::take(buffer)
     }
 }
 
-impl GeneratorInput<'_> for Vec<u8> {
+impl GeneratorInput for Vec<u8> {
     fn take_buffer(buffer: &mut String) -> Self {
         std::mem::take(buffer).into_bytes()
     }

@@ -93,15 +93,13 @@ pub fn get_expected(year: u16, day: u8, part: u8) -> Result<Option<String>, Erro
 
         let elapsed = start.elapsed();
         let body = resp.text()?;
-        let line = Line::new("get expected").with_duration(elapsed);
+        Line::new("get expected").with_duration(elapsed).println();
 
         let Some(found) = pattern.captures_iter(&body).nth(usize::from(part) - 1) else {
-            line.println();
             return Ok(None);
         };
 
         let expected = found.get(1).expect("no capture in pattern").as_str();
-        line.with_output(expected).println();
         Ok(Some(expected.to_string()))
     };
 

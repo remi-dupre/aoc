@@ -12,29 +12,29 @@ use colored::Colorize;
 use crate::input::{get_expected, get_input_data};
 use crate::params::{get_params, DayChoice, InputChoice, Params};
 use crate::step::Step;
-use crate::utils::{Line, Status};
+use crate::utils::{leak, Line, Status};
 
 pub type Error = Box<dyn std::error::Error>;
 
 type Day = u8;
 type Year = u16;
 
-pub struct Solution<I> {
+pub struct Solution<I: 'static> {
     ident: &'static str,
-    implem: Box<dyn for<'a> Step<&'a I, String>>,
+    implem: Box<dyn Step<&'static I, String>>,
 }
 
-pub struct DaySolutions<I> {
+pub struct DaySolutions<I: 'static> {
     year: Year,
     day: Day,
-    generator: Box<dyn Step<String, I>>,
+    generator: Box<dyn Step<&'static mut String, I>>,
     solutions: Vec<Solution<I>>,
 }
 
 impl<I> DaySolutions<I> {
     pub fn new<G>(year: Year, day: Day, generator: G) -> Self
     where
-        G: for<'a> Step<String, I> + 'static,
+        G: Step<&'static mut String, I> + 'static,
     {
         let generator = Box::new(generator);
 
@@ -48,13 +48,13 @@ impl<I> DaySolutions<I> {
 
     pub fn with_solution<V, F, O>(mut self, ident: &'static str, implem: F) -> Self
     where
-        V: ?Sized,
-        I: Borrow<V>,
-        F: for<'a> Step<&'a V, O> + 'static,
-        O: Display,
+        V: ?Sized + 'static,
+        I: Borrow<V> + 'static,
+        F: Step<&'static V, O> + 'static,
+        O: Display + 'static,
     {
         let implem =
-            Box::new(move |input: &'_ I| implem.run(input.borrow()).map(|x| x.to_string()));
+            Box::new(move |input: &'static I| implem.run(input.borrow()).map(|x| x.to_string()));
 
         self.solutions.push(Solution { ident, implem });
         self
@@ -76,7 +76,7 @@ impl<I> DayTrait for DaySolutions<I> {
 
     fn run(&self, params: &Params) {
         println!("Day {}:", self.day);
-        let data = get_input_data(self.day, self.year, &params.input);
+        let data = leak(get_input_data(self.day, self.year, &params.input));
         let extract_part = regex::Regex::new(r"part(\d+)").unwrap();
 
         let input = {
@@ -87,7 +87,7 @@ impl<I> DayTrait for DaySolutions<I> {
             match res {
                 Ok(x) => {
                     line.println();
-                    x
+                    leak(x)
                 }
                 Err(err) => {
                     line.with_output(err.red()).println();
@@ -98,7 +98,7 @@ impl<I> DayTrait for DaySolutions<I> {
 
         for solution in &self.solutions {
             let start = Instant::now();
-            let res = solution.implem.run(&input);
+            let res = solution.implem.run(input);
             let line = Line::new(solution.ident).with_duration(start.elapsed());
 
             let get_expected = || {
@@ -131,8 +131,8 @@ impl<I> DayTrait for DaySolutions<I> {
 
     #[cfg(feature = "bench")]
     fn bench(&self, params: &Params, criterion: &mut criterion::Criterion) {
-        let mut group = criterion.benchmark_group(format!("day {}", self.day));
-        let data = get_input_data(self.day, self.year, &params.input);
+        let mut group = criterion.benchmark_group(format!("day{}", self.day));
+        let data = leak(get_input_data(self.day, self.year, &params.input));
 
         let input = {
             let res = self.generator.run(data);
@@ -150,10 +150,13 @@ impl<I> DayTrait for DaySolutions<I> {
             }
         };
 
+        let input = leak(input);
+
         for solution in &self.solutions {
-            group.bench_with_input(solution.ident, &input, |b, input| {
-                b.iter(move || solution.implem.run(input))
-            });
+            group.bench_function(solution.ident, |b| b.iter(|| solution.implem.run(input)));
+            // group.bench_with_input(solution.ident, input, |b, input| {
+            //     b.iter(move || solution.implem.run(input))
+            // });
         }
 
         group.finish();
@@ -249,9 +252,9 @@ macro_rules! main {
                                 $crate::with_fallback!(
                                     $( $($opt_gen)? $day::$generator )?,
                                     InfaillibleStep($day::$generator)
-                                ).run(GeneratorInput::take_buffer(&mut input))
+                                ).run(GeneratorInput::take_buffer(input))
                             })?,
-                            InfaillibleStep(|x: String| x)
+                            InfaillibleStep(|x: &'static mut String| std::mem::take(x))
                         )
                     )
 
