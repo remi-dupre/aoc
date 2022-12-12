@@ -42,12 +42,20 @@ impl<T, E: fmt::Display> TryUnwrap for Result<T, E> {
 const PREFIX: &str = "  ";
 const DEFAULT_WIDTH: usize = 40;
 
+#[derive(Clone, Copy)]
+pub enum Status {
+    Ok,
+    Err,
+    Warn,
+}
+
 /// Simple helper struct used to display lines with a dotted separator.
 /// For example: "  - line text (1.2 ms) .............. status".
 pub struct Line {
     text: String,
     duration: Option<Duration>,
-    state: Option<ColoredString>,
+    output: Option<ColoredString>,
+    status: Option<Status>,
 }
 
 impl Line {
@@ -55,7 +63,8 @@ impl Line {
         Self {
             text: text.into(),
             duration: None,
-            state: None,
+            output: None,
+            status: None,
         }
     }
 
@@ -64,8 +73,13 @@ impl Line {
         self
     }
 
-    pub fn with_state(mut self, state: impl Into<ColoredString>) -> Self {
-        self.state = Some(state.into());
+    pub fn with_output(mut self, state: impl Into<ColoredString>) -> Self {
+        self.output = Some(state.into());
+        self
+    }
+
+    pub fn with_status(mut self, status: Status) -> Self {
+        self.status = Some(status);
         self
     }
 
@@ -85,11 +99,26 @@ impl fmt::Display for Line {
 
         write!(f, "{PREFIX}{}{}", self.text, duration.bright_black())?;
 
-        if let Some(state) = &self.state {
+        let show_status = |f: &mut fmt::Formatter| {
+            if let Some(status) = self.status {
+                let status_str = match status {
+                    Status::Ok => "✓".green(),
+                    Status::Err => "✗".red(),
+                    Status::Warn => "⁉".yellow(),
+                };
+
+                write!(f, " {}", status_str)
+            } else {
+                Ok(())
+            }
+        };
+
+        if let Some(state) = &self.output {
             let width = self.text.chars().count() + 1 + duration.chars().count();
             let dots = display_width - min(display_width - 5, width) - 2;
-            let dots = ".".repeat(dots);
-            write!(f, " {}", dots.bright_black())?;
+            let dots = ".".repeat(dots).bright_black();
+            write!(f, " {dots}")?;
+            show_status(f)?;
 
             if state.contains('\n') {
                 for line in state.trim_matches('\n').lines() {
@@ -98,6 +127,8 @@ impl fmt::Display for Line {
             } else {
                 write!(f, " {}", state.clone().bold())?;
             }
+        } else {
+            show_status(f)?;
         }
 
         Ok(())

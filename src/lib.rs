@@ -9,10 +9,10 @@ use std::time::Instant;
 
 use colored::Colorize;
 
-use crate::input::get_input_data;
+use crate::input::{get_expected, get_input_data};
 use crate::params::{get_params, DayChoice, InputChoice, Params};
 use crate::step::Step;
-use crate::utils::Line;
+use crate::utils::{Line, Status};
 
 pub type Error = Box<dyn std::error::Error>;
 
@@ -77,6 +77,7 @@ impl<I> DayTrait for DaySolutions<I> {
     fn run(&self, params: &Params) {
         println!("Day {}:", self.day);
         let data = get_input_data(self.day, self.year, &params.input);
+        let extract_part = regex::Regex::new(r"part(\d+)").unwrap();
 
         let input = {
             let start = Instant::now();
@@ -89,7 +90,7 @@ impl<I> DayTrait for DaySolutions<I> {
                     x
                 }
                 Err(err) => {
-                    line.with_state(err.red()).println();
+                    line.with_output(err.red()).println();
                     return;
                 }
             }
@@ -100,9 +101,30 @@ impl<I> DayTrait for DaySolutions<I> {
             let res = solution.implem.run(&input);
             let line = Line::new(solution.ident).with_duration(start.elapsed());
 
+            let get_expected = || {
+                let part: u8 = extract_part
+                    .captures(solution.ident)?
+                    .get(1)?
+                    .as_str()
+                    .parse()
+                    .ok()?;
+
+                // TODO: display errors
+                get_expected(self.year, self.day(), part)
+                    .map_err(|err| eprintln!("{err}"))
+                    .ok()
+                    .flatten()
+            };
+
+            let line = line.with_status(match get_expected() {
+                None => Status::Warn,
+                x if x.as_ref() == res.as_ref().ok() => Status::Ok,
+                _ => Status::Err,
+            });
+
             match res {
-                Ok(x) => line.with_state(x.normal()).println(),
-                Err(err) => line.with_state(err.red()).println(),
+                Ok(x) => line.with_output(x.normal()).println(),
+                Err(err) => line.with_output(err.red()).println(),
             }
         }
     }

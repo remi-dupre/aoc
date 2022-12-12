@@ -20,8 +20,8 @@ fn input_path(year: u16, day: u8) -> PathBuf {
     format!("input/{year}/day{day}.txt").into()
 }
 
-fn output_path(year: u16, day: u8) -> PathBuf {
-    format!("output/{year}/day{day}.txt").into()
+fn output_path(year: u16, day: u8, part: u8) -> PathBuf {
+    format!("output/{year}/day{day}-{part}.txt").into()
 }
 
 pub fn get_input_data(day: Day, year: Year, input: &InputChoice) -> String {
@@ -63,7 +63,7 @@ fn get_input(year: u16, day: u8) -> Result<String, Error> {
         let elapsed = start.elapsed();
         let mut result = resp.text()?;
 
-        Line::new("downloaded input file")
+        Line::new("download input file")
             .with_duration(elapsed)
             .println();
 
@@ -95,17 +95,17 @@ pub fn get_expected(year: u16, day: u8, part: u8) -> Result<Option<String>, Erro
         let body = resp.text()?;
         let line = Line::new("get expected").with_duration(elapsed);
 
-        let Some(found) = pattern.captures_iter(&body).nth(part.into()) else {
+        let Some(found) = pattern.captures_iter(&body).nth(usize::from(part) - 1) else {
             line.println();
             return Ok(None);
         };
 
         let expected = found.get(1).expect("no capture in pattern").as_str();
-        line.with_state(expected).println();
+        line.with_output(expected).println();
         Ok(Some(expected.to_string()))
     };
 
-    try_get_from_path_or_else(&output_path(year, day), fetch_from_web)
+    try_get_from_path_or_else(&output_path(year, day, part), fetch_from_web)
 }
 
 fn get_conn_token() -> Result<String, Error> {
