@@ -54,6 +54,13 @@ pub fn args(year: u16) -> Command {
                 .conflicts_with("days")
                 .help("Run all days"),
         )
+        .arg(
+            Arg::new("color")
+                .short('c')
+                .long("color")
+                .action(ArgAction::SetTrue)
+                .help("Enable colored timings"),
+        )
 }
 
 #[macro_export]
