@@ -46,6 +46,7 @@ const DEFAULT_WIDTH: usize = 30;
 pub struct Line {
     text: String,
     duration: Option<Duration>,
+    disable_duration_color: bool,
     state: Option<ColoredString>,
 }
 
@@ -54,6 +55,7 @@ impl Line {
         Self {
             text: text.into(),
             duration: None,
+            disable_duration_color: false,
             state: None,
         }
     }
@@ -67,6 +69,11 @@ impl Line {
         self.state = Some(state.into());
         self
     }
+
+    pub fn disable_duration_color(mut self, disable: bool) -> Self {
+        self.disable_duration_color = disable;
+        self
+    }
 }
 
 impl fmt::Display for Line {
@@ -78,7 +85,16 @@ impl fmt::Display for Line {
             .map(|duration| format!(" ({:.2?})", duration))
             .unwrap_or_else(String::new);
 
-        write!(f, "{}{}", self.text, duration.bright_black())?;
+        let duration = match self.duration {
+            _ if self.disable_duration_color => duration.bright_black(),
+            Some(d) if d < Duration::from_nanos(1000) => duration.bright_magenta(),
+            Some(d) if d < Duration::from_micros(1000) => duration.green(),
+            Some(d) if d < Duration::from_millis(1000) => duration.bright_yellow(),
+            Some(d) if d < Duration::from_secs(60) => duration.bright_red(),
+            _ => duration.bright_black(),
+        };
+
+        write!(f, "{}{}", self.text, duration)?;
 
         if let Some(state) = &self.state {
             let width = self.text.chars().count() + 1 + duration.chars().count();

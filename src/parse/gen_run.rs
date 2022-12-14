@@ -25,8 +25,8 @@ macro_rules! run_day {
                 }
             };
 
-            if let Some(input) = $crate::run_gen!($day, &data, $gen) {
-                $( $crate::run_sol!($day, &input, $sol); )+
+            if let Some(input) = $crate::run_gen!($day, &data, $opt, $gen) {
+                $( $crate::run_sol!($day, &input, $opt, $sol); )+
             } else {
                 $( $crate::skip_sol!($sol); )+
             };
@@ -37,23 +37,28 @@ macro_rules! run_day {
 #[macro_export]
 macro_rules! run_gen {
     // No generator is needed: default behavior is to just pass input &str
-    ( $day: ident, $data: expr, { gen_default } ) => {{
+    ( $day: ident, $data: expr, $opt: expr, { gen_default } ) => {{
         Some($data)
     }};
 
     // Run generator
-    ( $day: ident, $data: expr, { gen $generator: ident } ) => {{
+    ( $day: ident, $data: expr, $opt: expr, { gen $generator: ident }) => {{
         use $crate::utils::Line;
 
         let start = Instant::now();
         let input = $day::$generator($data);
         let elapsed = start.elapsed();
-        println!("  - {}", Line::new("generator").with_duration(elapsed));
+        println!(
+            "  - {}",
+            Line::new("generator")
+                .with_duration(elapsed)
+                .disable_duration_color($opt.get_flag("color"))
+        );
         Some(input)
     }};
 
     // Run fallible generator
-    ( $day: ident, $data: expr, { gen_fallible $generator: ident } ) => {{
+    ( $day: ident, $data: expr, $opt: expr, { gen_fallible $generator: ident }) => {{
         use $crate::colored::*;
         use $crate::utils::{Line, TryUnwrap};
 
@@ -63,7 +68,12 @@ macro_rules! run_gen {
 
         match result.try_unwrap() {
             Ok(input) => {
-                println!("  - {}", Line::new("generator").with_duration(elapsed));
+                println!(
+                    "  - {}",
+                    Line::new("generator")
+                        .with_duration(elapsed)
+                        .disable_duration_color($opt.get_flag("color"))
+                );
                 Some(input)
             }
             Err(msg) => {
@@ -71,6 +81,7 @@ macro_rules! run_gen {
                     "  - {}",
                     Line::new("generator")
                         .with_duration(elapsed)
+                        .disable_duration_color($opt.get_flag("color"))
                         .with_state(msg.red())
                 );
                 None
@@ -82,7 +93,7 @@ macro_rules! run_gen {
 #[macro_export]
 macro_rules! run_sol {
     // Run solution
-    ( $day: ident, $input: expr, { sol $solution: ident } ) => {{
+    ( $day: ident, $input: expr, $opt: expr, { sol $solution: ident } ) => {{
         use $crate::colored::*;
         use $crate::utils::Line;
 
@@ -94,19 +105,22 @@ macro_rules! run_sol {
             "  - {}",
             Line::new(stringify!($solution))
                 .with_duration(elapsed)
+                .disable_duration_color($opt.get_flag("color"))
                 .with_state(format!("{}", response).normal())
         );
     }};
 
     // Run fallible solution
-    ( $day: ident, $input: expr, { sol_fallible $solution: ident } ) => {{
+    ( $day: ident, $input: expr, $opt: expr, { sol_fallible $solution: ident } ) => {{
         use $crate::colored::*;
         use $crate::utils::{Line, TryUnwrap};
 
         let start = Instant::now();
         let response = $day::$solution($input);
         let elapsed = start.elapsed();
-        let line = Line::new(stringify!($solution)).with_duration(elapsed);
+        let line = Line::new(stringify!($solution))
+            .with_duration(elapsed)
+            .disable_duration_color($opt.get_flag("color"));
 
         println!(
             "  - {}",
