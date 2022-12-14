@@ -87,10 +87,10 @@ impl fmt::Display for Line {
 
         let duration = match self.duration {
             _ if !self.duration_color => duration.bright_black(),
-            Some(ns) if Duration::from_nanos(1000) > ns => duration.bright_magenta(),
-            Some(us) if Duration::from_micros(1000) > us => duration.green(),
-            Some(ms) if Duration::from_millis(1000) > ms => duration.bright_yellow(),
-            Some(s) if Duration::from_secs(60) > s => duration.bright_red(),
+            Some(d) if d < Duration::from_nanos(1000) => duration.bright_magenta(),
+            Some(d) if d < Duration::from_micros(1000) => duration.green(),
+            Some(d) if d < Duration::from_millis(1000) => duration.bright_yellow(),
+            Some(d) if d < Duration::from_secs(60) => duration.bright_red(),
             _ => duration.bright_black(),
         };
 
