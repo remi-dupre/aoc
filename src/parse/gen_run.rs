@@ -52,7 +52,7 @@ macro_rules! run_gen {
             "  - {}",
             Line::new("generator")
                 .with_duration(elapsed)
-                .with_duration_color($opt.get_flag("color"))
+                .disable_duration_color($opt.get_flag("color"))
         );
         Some(input)
     }};
@@ -72,7 +72,7 @@ macro_rules! run_gen {
                     "  - {}",
                     Line::new("generator")
                         .with_duration(elapsed)
-                        .with_duration_color($opt.get_flag("color"))
+                        .disable_duration_color($opt.get_flag("color"))
                 );
                 Some(input)
             }
@@ -81,7 +81,7 @@ macro_rules! run_gen {
                     "  - {}",
                     Line::new("generator")
                         .with_duration(elapsed)
-                        .with_duration_color($opt.get_flag("color"))
+                        .disable_duration_color($opt.get_flag("color"))
                         .with_state(msg.red())
                 );
                 None
@@ -105,7 +105,7 @@ macro_rules! run_sol {
             "  - {}",
             Line::new(stringify!($solution))
                 .with_duration(elapsed)
-                .with_duration_color($opt.get_flag("color"))
+                .disable_duration_color($opt.get_flag("color"))
                 .with_state(format!("{}", response).normal())
         );
     }};
@@ -120,7 +120,7 @@ macro_rules! run_sol {
         let elapsed = start.elapsed();
         let line = Line::new(stringify!($solution))
             .with_duration(elapsed)
-            .with_duration_color($opt.get_flag("color"));
+            .disable_duration_color($opt.get_flag("color"));
 
         println!(
             "  - {}",

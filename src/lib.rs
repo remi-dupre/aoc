@@ -57,9 +57,9 @@ pub fn args(year: u16) -> Command {
         .arg(
             Arg::new("color")
                 .short('c')
-                .long("color")
+                .long("no-color")
                 .action(ArgAction::SetTrue)
-                .help("Enable colored timings"),
+                .help("Disable colored timings"),
         )
 }
 
