@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use clap::{Arg, ArgAction, Command, ValueHint};
+use clap::{value_parser, Arg, ArgAction, Command, ValueHint};
 
 use crate::Day;
 
@@ -29,6 +29,7 @@ impl DayChoice {
 pub struct Params {
     pub input: InputChoice,
     pub days: DayChoice,
+    pub check: bool,
     pub bench: bool,
 }
 
@@ -58,7 +59,15 @@ pub fn get_params(year: u16) -> Params {
                 .short('d')
                 .long("day")
                 .value_name("day num")
+                .value_parser(value_parser!(Day))
                 .help("Days to execute. By default only latest days will run"),
+        )
+        .arg(
+            Arg::new("check")
+                .short('n')
+                .long("no-check")
+                .action(ArgAction::SetFalse)
+                .help("Don't perform result validation"),
         )
         .arg(
             Arg::new("all")
@@ -84,13 +93,20 @@ pub fn get_params(year: u16) -> Params {
         (true, Some(_)) => panic!("You can't specify both stdin and file inputs"),
     };
 
-    let days = match (args.get_one::<Vec<Day>>("days"), args.get_flag("all")) {
+    let days = match (args.get_many::<Day>("days"), args.get_flag("all")) {
         (None, false) => DayChoice::Latest,
         (None, true) => DayChoice::All,
-        (Some(days), false) => DayChoice::Select(days.clone()),
+        (Some(days), false) => DayChoice::Select(days.copied().collect()),
         (Some(_), true) => panic!("You can't specify days with the --all option"),
     };
 
+    let check = args.get_flag("check");
     let bench = args.get_flag("bench");
-    Params { input, days, bench }
+
+    Params {
+        input,
+        days,
+        check,
+        bench,
+    }
 }

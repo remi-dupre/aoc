@@ -99,7 +99,7 @@ impl<I> DayTrait for DaySolutions<I> {
         for solution in &self.solutions {
             let start = Instant::now();
             let res = solution.implem.run(input);
-            let line = Line::new(solution.ident).with_duration(start.elapsed());
+            let mut line = Line::new(solution.ident).with_duration(start.elapsed());
 
             let get_expected = || {
                 let part: u8 = extract_part
@@ -116,11 +116,13 @@ impl<I> DayTrait for DaySolutions<I> {
                     .flatten()
             };
 
-            let line = line.with_status(match get_expected() {
-                None => Status::Warn,
-                x if x.as_ref() == res.as_ref().ok() => Status::Ok,
-                _ => Status::Err,
-            });
+            if params.check {
+                line = line.with_status(match get_expected() {
+                    None => Status::Warn,
+                    x if x.as_ref() == res.as_ref().ok() => Status::Ok,
+                    _ => Status::Err,
+                });
+            }
 
             match res {
                 Ok(x) => line.with_output(x.normal()).println(),
